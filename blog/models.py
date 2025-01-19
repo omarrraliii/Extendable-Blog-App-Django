@@ -2,14 +2,14 @@ from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import User
 
-class PublishManager(models.Manager):
+class PublishManager(models.Manager):                               #Custom Manager
     def get_queryset(self):
         return super().get_queryset()\
                         .filter(status=Post.Status.PUBLISHED)
 
 class Post(models.Model):
 
-    class Status(models.TextChoices):
+    class Status(models.TextChoices):                               #Choices for status field
         DRAFT = 'DF', 'Draft'
         PUBLISHED = 'PB', 'Published'
 
@@ -24,7 +24,7 @@ class Post(models.Model):
                               default=Status.DRAFT)
     author = models.ForeignKey(User,
                                on_delete=models.CASCADE,
-                               related_name='blog_posts')
+                               related_name='blog_posts')               #One to Many relationship
     objects = models.Manager()
     published = PublishManager()
     class Meta:

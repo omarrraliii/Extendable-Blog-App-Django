@@ -7,8 +7,11 @@ from .forms import EmailPostForm, CommentForm
 from django.views.decorators.http import require_POST
 from django.core.mail import send_mail
 from taggit.models import Tag
+from django.db.models import Count
 
 # Create your views here.
+
+
 
 @require_POST
 def post_comment(request, post_id):
@@ -78,9 +81,17 @@ def post_details(request,year,month,day,post):                                  
                              slug=post,
                              status=Post.Status.PUBLISHED)
     comments = post.comments.filter(active=True)
-    form =CommentForm()                               
+    form =CommentForm()         
+
+    #List of similar posts
+    post_tag_ids= post.tags.values_list('id', flat=True)
+    similar_posts = Post.published.filter(tags__in=post_tag_ids)\
+                                  .exclude(id=post.id)
+    similar_posts = similar_posts.annotate(same_tags=Count('tags'))\
+                                  .order_by('-same_tags','-publish')[:4]
     return render(request,
                   'blog/post/details.html',
                   {'post':post, 
                    'form':form,
-                   'comments': comments})
+                   'comments': comments,
+                   'similar_posts': similar_posts})
